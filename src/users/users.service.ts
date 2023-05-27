@@ -4,12 +4,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { InjectModel} from '@nestjs/mongoose'
+import { UserSchema, User as UD } from './schemas/user.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private UserRepository: Repository<User>,
+    private UserRepository: Repository<User>, @InjectModel(UD.name) private UserModel : Model<UD>
   ) {}
 
   create(data) {
@@ -52,5 +55,14 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async createUser(data): Promise<UD>{
+    const userResource = new this.UserModel(data);
+    return userResource.save();
+  }
+
+  async fetchUsers(): Promise<UD[]>{
+    return this.UserModel.find().exec();
   }
 }
